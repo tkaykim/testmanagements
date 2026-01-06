@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 
 interface DanceTeam {
   id: number;
-  name_ko: string;
+  name_ko: string | null;
   name_en: string | null;
   nationality: string | null;
   logo: string | null;
@@ -32,7 +32,7 @@ export default function DanceTeamsPage() {
   const fetchTeams = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('dance_team')
         .select('*')
         .order('created_at', { ascending: false });
@@ -62,7 +62,7 @@ export default function DanceTeamsPage() {
 
     try {
       // 먼저 매핑 테이블에서 관련 데이터 삭제
-      const { error: mappingError } = await supabase
+      const { error: mappingError } = await (supabase as any)
         .from('dancer_team_mapping')
         .delete()
         .eq('dance_team_id', id);
@@ -70,7 +70,7 @@ export default function DanceTeamsPage() {
       if (mappingError) throw mappingError;
 
       // 그 다음 댄스팀 삭제
-      const { error } = await supabase.from('dance_team').delete().eq('id', id);
+      const { error } = await (supabase as any).from('dance_team').delete().eq('id', id);
       if (error) throw error;
 
       await fetchTeams();
@@ -83,13 +83,13 @@ export default function DanceTeamsPage() {
   const handleSave = async (teamData: Partial<DanceTeam>) => {
     try {
       if (selectedTeam) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('dance_team')
           .update({ ...teamData, updated_at: new Date().toISOString() })
           .eq('id', selectedTeam.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('dance_team').insert({
+        const { error } = await (supabase as any).from('dance_team').insert({
           ...teamData,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),

@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     // 회사 ID가 제공되면 해당 회사의 담당자만 필터링
     if (companyId) {
-      query = query.eq('partner_company_id', companyId);
+      query = query.eq('partner_company_id', parseInt(companyId, 10));
     }
 
     const { data, error } = await query;

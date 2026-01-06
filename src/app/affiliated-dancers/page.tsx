@@ -303,7 +303,7 @@ export default function AffiliatedDancersPage() {
       });
 
       if (selectedTeam) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('dance_team')
           .update({ ...cleanedData, updated_at: new Date().toISOString() })
           .eq('id', selectedTeam.id);

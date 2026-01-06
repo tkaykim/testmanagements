@@ -84,6 +84,7 @@ export const DancerModal: React.FC<DancerModalProps> = ({
     fetchPartnerCompanies();
     fetchDanceTeams();
     fetchPartnerWorkers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 모달이 열릴 때 소속 댄서(partner_company_id = 9)인 경우 회사 정보 자동 설정
@@ -114,6 +115,7 @@ export const DancerModal: React.FC<DancerModalProps> = ({
     // 회사가 변경되면 선택된 담당자 초기화
     setSelectedWorker(null);
     setWorkerSearchQuery('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompany?.id]);
 
   useEffect(() => {
@@ -132,15 +134,23 @@ export const DancerModal: React.FC<DancerModalProps> = ({
         setCompanySearchQuery('');
       }
       
-      // 팀명 설정 - dancer_team_mapping에서 팀 정보 가져오기
+      // 팀명 설정 - dancer_team_mapping에서 팀 정보 가져오기 (dancer.id가 있을 때만)
       const fetchDancerTeam = async () => {
+        // 새 댄서 추가 시에는 팀 매핑 조회 불필요
+        if (!dancer.id) {
+          setSelectedTeam(null);
+          setSelectedTeamId(null);
+          setTeamSearchQuery('');
+          return;
+        }
+        
         try {
           const { supabase } = await import('@/lib/supabase');
           const { data: mapping, error } = await supabase
             .from('dancer_team_mapping')
             .select('dance_team_id')
             .eq('dancer_id', dancer.id)
-            .single();
+            .maybeSingle();
           
           if (!error && mapping && mapping.dance_team_id) {
             const team = danceTeams.find((t) => t.id === mapping.dance_team_id);
@@ -248,6 +258,7 @@ export const DancerModal: React.FC<DancerModalProps> = ({
       setSelectedWorker(null);
       setWorkerSearchQuery('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dancer, isOpen, partnerCompanies, danceTeams]);
 
   // partnerWorkers가 로드된 후 담당자 정보 설정
@@ -259,6 +270,7 @@ export const DancerModal: React.FC<DancerModalProps> = ({
         setWorkerSearchQuery(worker.name_ko || worker.name_en || worker.name || '');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partnerWorkers, dancer]);
 
   useEffect(() => {

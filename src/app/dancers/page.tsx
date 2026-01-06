@@ -100,13 +100,27 @@ export default function DancersPage() {
       // 빈 문자열을 null로 변환하는 헬퍼 함수
       const cleanData = (data: Partial<Dancer>): any => {
         const cleaned: any = {};
+        // DB에 없는 필드들 제외
+        const excludedFields = ['dance_team', 'dance_team_id', 'team_name'];
+        // 날짜 필드 목록
+        const dateFields = ['contract_start', 'contract_end', 'visa_start', 'visa_end'];
+        
         Object.keys(data).forEach((key) => {
+          // 제외할 필드는 건너뛰기
+          if (excludedFields.includes(key)) {
+            return;
+          }
+          
           const field = key as keyof Dancer;
           const value = data[field];
           
           // gender 필드는 특별 처리: 빈 문자열이면 null
           if (field === 'gender') {
             cleaned[field] = value === '' || value === null ? null : value;
+          }
+          // 날짜 필드 처리 (contract_start, contract_end, visa_start, visa_end)
+          else if (dateFields.includes(key)) {
+            cleaned[key] = (value === '' || value === null || value === undefined) ? null : value;
           }
           // 문자열 필드인 경우 빈 문자열을 null로 변환
           else if (typeof value === 'string') {
@@ -121,8 +135,7 @@ export default function DancersPage() {
       // dance_team_id를 별도로 추출
       const danceTeamId = (dancerData as any).dance_team_id;
       const cleanedData = cleanData(dancerData);
-      // dance_team_id는 dancers 테이블에 없으므로 제거
-      delete cleanedData.dance_team_id;
+      delete cleanedData.dance_team;
 
       let savedDancerId: number;
 

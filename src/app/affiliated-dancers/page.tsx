@@ -96,7 +96,7 @@ export default function AffiliatedDancersPage() {
   const fetchAffiliatedTeams = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('dance_team')
         .select('*')
         .eq('partner_company_id', GRIGO_ENTERTAINMENT_COMPANY_ID)
@@ -157,7 +157,7 @@ export default function AffiliatedDancersPage() {
 
     try {
       // 먼저 매핑 테이블에서 관련 데이터 삭제
-      const { error: mappingError } = await supabase
+      const { error: mappingError } = await (supabase as any)
         .from('dancer_team_mapping')
         .delete()
         .eq('dance_team_id', id);
@@ -165,7 +165,7 @@ export default function AffiliatedDancersPage() {
       if (mappingError) throw mappingError;
 
       // 그 다음 댄스팀 삭제
-      const { error } = await supabase.from('dance_team').delete().eq('id', id);
+      const { error } = await (supabase as any).from('dance_team').delete().eq('id', id);
       if (error) throw error;
 
       await fetchAffiliatedTeams();
@@ -175,18 +175,32 @@ export default function AffiliatedDancersPage() {
     }
   };
 
-  const handleSave = async (dancerData: Partial<Dancer>) => {
+  const handleSave = async (dancerData: Partial<Dancer> & { dance_team_id?: number | null }) => {
     try {
       // 빈 문자열을 null로 변환하는 헬퍼 함수
       const cleanData = (data: Partial<Dancer>): any => {
         const cleaned: any = {};
+        // DB에 없는 필드들 제외
+        const excludedFields = ['dance_team', 'dance_team_id', 'team_name'];
+        // 날짜 필드 목록
+        const dateFields = ['contract_start', 'contract_end', 'visa_start', 'visa_end'];
+        
         Object.keys(data).forEach((key) => {
+          // 제외할 필드는 건너뛰기
+          if (excludedFields.includes(key)) {
+            return;
+          }
+          
           const field = key as keyof Dancer;
           const value = data[field];
           
           // gender 필드는 특별 처리: 빈 문자열이면 null
           if (field === 'gender') {
             cleaned[field] = value === '' || value === null ? null : value;
+          }
+          // 날짜 필드 처리 (contract_start, contract_end, visa_start, visa_end)
+          else if (dateFields.includes(key)) {
+            cleaned[key] = (value === '' || value === null || value === undefined) ? null : value;
           }
           // 문자열 필드인 경우 빈 문자열을 null로 변환
           else if (typeof value === 'string') {
@@ -198,6 +212,11 @@ export default function AffiliatedDancersPage() {
         return cleaned;
       };
 
+      // dance_team_id를 별도로 추출
+      const danceTeamId = (dancerData as any).dance_team_id;
+      
+      let savedDancerId: number;
+      
       if (selectedDancer) {
         const cleanedData = cleanData(dancerData);
         const response = await fetch('/api/dancers', {
@@ -216,6 +235,7 @@ export default function AffiliatedDancersPage() {
         if (!response.ok) {
           throw new Error(result.error || '저장에 실패했습니다.');
         }
+        savedDancerId = selectedDancer.id;
       } else {
         // nickname_ko, nickname_en, real_name 중 하나는 필수
         if (!dancerData.nickname_ko?.trim() && !dancerData.nickname_en?.trim() && !dancerData.real_name?.trim()) {
@@ -242,7 +262,27 @@ export default function AffiliatedDancersPage() {
         if (!response.ok) {
           throw new Error(result.error || '저장에 실패했습니다.');
         }
+        savedDancerId = result.data?.id;
       }
+      
+      // 댄서-팀 매핑 처리
+      if (savedDancerId) {
+        // 기존 매핑 삭제
+        const { error: deleteError } = await (supabase as any)
+          .from('dancer_team_mapping')
+          .delete()
+          .eq('dancer_id', savedDancerId);
+        if (deleteError) console.error('기존 댄서-팀 매핑 삭제 실패:', deleteError);
+
+          // 새로운 매핑 추가
+          if (danceTeamId) {
+            const { error: insertError } = await (supabase as any)
+              .from('dancer_team_mapping')
+            .insert({ dancer_id: savedDancerId, dance_team_id: danceTeamId });
+          if (insertError) throw insertError;
+        }
+      }
+      
       setIsDancerModalOpen(false);
       setSelectedDancer(null);
       await fetchAffiliatedDancers();
@@ -269,7 +309,7 @@ export default function AffiliatedDancersPage() {
           .eq('id', selectedTeam.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('dance_team').insert({
+        const { error } = await (supabase as any).from('dance_team').insert({
           ...cleanedData,
           partner_company_id: GRIGO_ENTERTAINMENT_COMPANY_ID, // 소속 댄스팀은 항상 '그리고 엔터테인먼트'로 설정
           created_at: new Date().toISOString(),
@@ -300,7 +340,7 @@ export default function AffiliatedDancersPage() {
         </div>
 
         <p className="text-sm text-gray-600">
-          '그리고 엔터테인먼트' 소속 댄서 및 댄스팀을 관리합니다.
+          &apos;그리고 엔터테인먼트&apos; 소속 댄서 및 댄스팀을 관리합니다.
         </p>
 
         {/* 탭 메뉴 */}

@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { PartnerCompanyTable } from '@/components/partners/PartnerCompanyTable';
 import { PartnerWorkerTable } from '@/components/partners/PartnerWorkerTable';
 import { PartnerCompanyModal } from '@/components/partners/PartnerCompanyModal';
 import { PartnerWorkerModal } from '@/components/partners/PartnerWorkerModal';
-import { supabase } from '@/lib/supabase';
+import { PartnerCompanyDetailModal } from '@/components/partners/PartnerCompanyDetailModal';
+import { PartnerWorkerDetailModal } from '@/components/partners/PartnerWorkerDetailModal';
+import { getSupabaseClient } from '@/lib/supabase';
 import { Tables } from '@/types/database';
 
 type PartnerCompany = Tables<'partner_company'>;
@@ -16,23 +18,32 @@ export default function PartnersPage() {
   const [activeTab, setActiveTab] = useState<'companies' | 'workers'>('companies');
   const [companies, setCompanies] = useState<PartnerCompany[]>([]);
   const [workers, setWorkers] = useState<PartnerWorker[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isWorkerModalOpen, setIsWorkerModalOpen] = useState(false);
+  const [isCompanyDetailOpen, setIsCompanyDetailOpen] = useState(false);
+  const [isWorkerDetailOpen, setIsWorkerDetailOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<PartnerCompany | null>(null);
   const [selectedWorker, setSelectedWorker] = useState<PartnerWorker | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (activeTab === 'companies') {
-      fetchCompanies();
-    } else {
-      fetchWorkers();
-    }
-  }, [activeTab]);
-
-  const fetchCompanies = async () => {
-    try {
+    // 검색/드롭다운(워커의 회사 선택)을 위해 회사/워커를 모두 한 번 로드
+    const init = async () => {
       setLoading(true);
+      await Promise.all([fetchCompanies({ silent: true }), fetchWorkers({ silent: true })]);
+      setLoading(false);
+    };
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchCompanies = async (opts?: { silent?: boolean }) => {
+    try {
+      if (!opts?.silent) setLoading(true);
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       const { data, error } = await supabase
         .from('partner_company')
         .select('*')
@@ -43,13 +54,16 @@ export default function PartnersPage() {
     } catch (error) {
       console.error('파트너 회사 목록 조회 실패:', error);
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   };
 
-  const fetchWorkers = async () => {
+  const fetchWorkers = async (opts?: { silent?: boolean }) => {
     try {
-      setLoading(true);
+      if (!opts?.silent) setLoading(true);
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       const { data, error } = await supabase
         .from('partner_worker')
         .select('*')
@@ -60,7 +74,7 @@ export default function PartnersPage() {
     } catch (error) {
       console.error('파트너 워커 목록 조회 실패:', error);
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   };
 
@@ -75,9 +89,10 @@ export default function PartnersPage() {
   };
 
   const handleDeleteCompany = async (id: number) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
-
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       const { error } = await supabase.from('partner_company').delete().eq('id', id);
       if (error) throw error;
       await fetchCompanies();
@@ -89,6 +104,9 @@ export default function PartnersPage() {
 
   const handleSaveCompany = async (companyData: Partial<PartnerCompany>) => {
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       if (selectedCompany) {
         const { error } = await supabase
           .from('partner_company')
@@ -124,9 +142,10 @@ export default function PartnersPage() {
   };
 
   const handleDeleteWorker = async (id: number) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
-
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       const { error } = await supabase.from('partner_worker').delete().eq('id', id);
       if (error) throw error;
       await fetchWorkers();
@@ -138,6 +157,9 @@ export default function PartnersPage() {
 
   const handleSaveWorker = async (workerData: Partial<PartnerWorker>) => {
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       if (selectedWorker) {
         const { error } = await supabase
           .from('partner_worker')
@@ -161,6 +183,38 @@ export default function PartnersPage() {
       alert('저장에 실패했습니다.');
     }
   };
+
+  const companyById = useMemo(() => {
+    const map = new Map<number, PartnerCompany>();
+    for (const c of companies) map.set(c.id, c);
+    return map;
+  }, [companies]);
+
+  const filteredCompanies = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return companies;
+    const includes = (v: string | null) => (v || '').toLowerCase().includes(q);
+    return companies.filter(
+      (c) => includes(c.company_name_ko) || includes(c.company_name_en) || includes(c.industry)
+    );
+  }, [companies, searchQuery]);
+
+  const filteredWorkers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return workers;
+    const includes = (v: string | null) => (v || '').toLowerCase().includes(q);
+    return workers.filter((w) => {
+      const company = w.partner_company_id ? companyById.get(w.partner_company_id) : undefined;
+      return (
+        includes(w.name) ||
+        includes(w.name_ko) ||
+        includes(w.name_en) ||
+        includes(company?.company_name_ko ?? null) ||
+        includes(company?.company_name_en ?? null) ||
+        includes(company?.industry ?? null)
+      );
+    });
+  }, [workers, searchQuery, companyById]);
 
   return (
     <DashboardLayout>
@@ -200,17 +254,81 @@ export default function PartnersPage() {
           </nav>
         </div>
 
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <div className="flex-1">
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={
+                activeTab === 'companies'
+                  ? '회사명/업종으로 검색'
+                  : '직원명/회사명/업종으로 검색'
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          {searchQuery.trim() && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              초기화
+            </button>
+          )}
+        </div>
+
         {loading ? (
           <div className="text-center py-8">로딩 중...</div>
         ) : activeTab === 'companies' ? (
           <PartnerCompanyTable
-            companies={companies}
-            onEdit={handleEditCompany}
-            onDelete={handleDeleteCompany}
+            companies={filteredCompanies}
+            onSelect={(company) => {
+              setSelectedCompany(company);
+              setIsCompanyDetailOpen(true);
+            }}
           />
         ) : (
-          <PartnerWorkerTable workers={workers} onEdit={handleEditWorker} onDelete={handleDeleteWorker} />
+          <PartnerWorkerTable
+            workers={filteredWorkers}
+            onSelect={(worker) => {
+              setSelectedWorker(worker);
+              setIsWorkerDetailOpen(true);
+            }}
+          />
         )}
+
+        <PartnerCompanyDetailModal
+          isOpen={isCompanyDetailOpen}
+          onClose={() => setIsCompanyDetailOpen(false)}
+          company={selectedCompany}
+          onEdit={(company) => {
+            setIsCompanyDetailOpen(false);
+            handleEditCompany(company);
+          }}
+          onDelete={handleDeleteCompany}
+        />
+
+        <PartnerWorkerDetailModal
+          isOpen={isWorkerDetailOpen}
+          onClose={() => setIsWorkerDetailOpen(false)}
+          worker={selectedWorker}
+          companyName={
+            selectedWorker?.partner_company_id
+              ? companyById.get(selectedWorker.partner_company_id)?.company_name_ko ?? null
+              : null
+          }
+          companyIndustry={
+            selectedWorker?.partner_company_id
+              ? companyById.get(selectedWorker.partner_company_id)?.industry ?? null
+              : null
+          }
+          onEdit={(worker) => {
+            setIsWorkerDetailOpen(false);
+            handleEditWorker(worker);
+          }}
+          onDelete={handleDeleteWorker}
+        />
 
         <PartnerCompanyModal
           isOpen={isCompanyModalOpen}

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { DanceTeamTable } from '@/components/dance-teams/DanceTeamTable';
 import { DanceTeamModal } from '@/components/dance-teams/DanceTeamModal';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 interface DanceTeam {
   id: number;
@@ -32,6 +32,9 @@ export default function DanceTeamsPage() {
   const fetchTeams = async () => {
     try {
       setLoading(true);
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       const { data, error } = await (supabase as any)
         .from('dance_team')
         .select('*')
@@ -61,6 +64,9 @@ export default function DanceTeamsPage() {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       // 먼저 매핑 테이블에서 관련 데이터 삭제
       const { error: mappingError } = await (supabase as any)
         .from('dancer_team_mapping')
@@ -82,6 +88,9 @@ export default function DanceTeamsPage() {
 
   const handleSave = async (teamData: Partial<DanceTeam>) => {
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       if (selectedTeam) {
         const { error } = await (supabase as any)
           .from('dance_team')

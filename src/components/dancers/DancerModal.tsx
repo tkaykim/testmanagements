@@ -144,7 +144,9 @@ export const DancerModal: React.FC<DancerModalProps> = ({
         }
         
         try {
-          const { supabase } = await import('@/lib/supabase');
+          const { getSupabaseClient } = await import('@/lib/supabase');
+          const supabase = getSupabaseClient();
+          if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
           const { data: mapping, error } = await supabase
             .from('dancer_team_mapping')
             .select('dance_team_id')
@@ -289,7 +291,9 @@ export const DancerModal: React.FC<DancerModalProps> = ({
 
   const fetchDanceTeams = async () => {
     try {
-      const { supabase } = await import('@/lib/supabase');
+      const { getSupabaseClient } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
       const { data, error } = await supabase
         .from('dance_team')
         .select('id, name_ko, name_en')

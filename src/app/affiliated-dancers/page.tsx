@@ -6,7 +6,7 @@ import { DancerTable } from '@/components/dancers/DancerTable';
 import { DancerModal } from '@/components/dancers/DancerModal';
 import { DanceTeamTable } from '@/components/dance-teams/DanceTeamTable';
 import { DanceTeamModal } from '@/components/dance-teams/DanceTeamModal';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 import { Tables } from '@/types/database';
 
 type Dancer = Tables<'dancers'>;
@@ -96,6 +96,9 @@ export default function AffiliatedDancersPage() {
   const fetchAffiliatedTeams = async () => {
     try {
       setLoading(true);
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       const { data, error } = await (supabase as any)
         .from('dance_team')
         .select('*')
@@ -156,6 +159,9 @@ export default function AffiliatedDancersPage() {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       // 먼저 매핑 테이블에서 관련 데이터 삭제
       const { error: mappingError } = await (supabase as any)
         .from('dancer_team_mapping')
@@ -177,6 +183,9 @@ export default function AffiliatedDancersPage() {
 
   const handleSave = async (dancerData: Partial<Dancer> & { dance_team_id?: number | null }) => {
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       // 빈 문자열을 null로 변환하는 헬퍼 함수
       const cleanData = (data: Partial<Dancer>): any => {
         const cleaned: any = {};
@@ -294,6 +303,9 @@ export default function AffiliatedDancersPage() {
 
   const handleSaveTeam = async (teamData: Partial<DanceTeam>) => {
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
+
       // 빈 문자열을 null로 변환
       const cleanedData: any = { ...teamData };
       Object.keys(cleanedData).forEach((key) => {

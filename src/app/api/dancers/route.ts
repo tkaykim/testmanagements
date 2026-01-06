@@ -2,19 +2,31 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// 서비스 역할 키를 사용하여 RLS를 우회
-const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+  if (!supabaseUrl || !supabaseServiceKey) return null;
+
+  // 서비스 역할 키를 사용하여 RLS를 우회
+  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
 
 export async function GET(request: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase 환경변수가 설정되어 있지 않습니다.' },
+        { status: 500 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('company_id');
 
@@ -82,6 +94,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase 환경변수가 설정되어 있지 않습니다.' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     
     // gender 필드가 빈 문자열이면 null로 변환
@@ -121,6 +141,14 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase 환경변수가 설정되어 있지 않습니다.' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { id, ...updateData } = body;
 
@@ -169,6 +197,14 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase 환경변수가 설정되어 있지 않습니다.' },
+        { status: 500 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

@@ -187,7 +187,9 @@ export default function DancersPage() {
 
       // dancer_team_mapping 처리
       if (savedDancerId) {
-        const { supabase } = await import('@/lib/supabase');
+        const { getSupabaseClient } = await import('@/lib/supabase');
+        const supabase = getSupabaseClient();
+        if (!supabase) throw new Error('Supabase 환경변수가 설정되어 있지 않습니다.');
         
         // 기존 매핑 삭제
         const { error: deleteError } = await (supabase as any)

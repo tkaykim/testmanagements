@@ -315,8 +315,8 @@ export type Database = {
           created_at: string
           entity_id: number
           entity_type: string
-          mentioned_user_ids: Json | null
           id: number
+          mentioned_user_ids: Json | null
           updated_at: string
         }
         Insert: {
@@ -326,8 +326,8 @@ export type Database = {
           created_at?: string
           entity_id: number
           entity_type: string
-          mentioned_user_ids?: Json | null
           id?: number
+          mentioned_user_ids?: Json | null
           updated_at?: string
         }
         Update: {
@@ -337,8 +337,8 @@ export type Database = {
           created_at?: string
           entity_id?: number
           entity_type?: string
-          mentioned_user_ids?: Json | null
           id?: number
+          mentioned_user_ids?: Json | null
           updated_at?: string
         }
         Relationships: [
@@ -439,80 +439,196 @@ export type Database = {
           },
         ]
       }
+      dance_team: {
+        Row: {
+          created_at: string | null
+          id: number
+          leader_id: number | null
+          logo: string | null
+          name_en: string | null
+          name_ko: string
+          nationality: string | null
+          partner_company_id: number | null
+          photo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          leader_id?: number | null
+          logo?: string | null
+          name_en?: string | null
+          name_ko: string
+          nationality?: string | null
+          partner_company_id?: number | null
+          photo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          leader_id?: number | null
+          logo?: string | null
+          name_en?: string | null
+          name_ko?: string
+          nationality?: string | null
+          partner_company_id?: number | null
+          photo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_dance_team_leader_id"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "dancers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_dance_team_partner_company_id"
+            columns: ["partner_company_id"]
+            isOneToOne: false
+            referencedRelation: "partner_company"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dancer_team_mapping: {
+        Row: {
+          created_at: string | null
+          dance_team_id: number
+          dancer_id: number
+          id: number
+        }
+        Insert: {
+          created_at?: string | null
+          dance_team_id: number
+          dancer_id: number
+          id?: number
+        }
+        Update: {
+          created_at?: string | null
+          dance_team_id?: number
+          dancer_id?: number
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dancer_team_mapping_dance_team_id_fkey"
+            columns: ["dance_team_id"]
+            isOneToOne: false
+            referencedRelation: "dance_team"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dancer_team_mapping_dancer_id_fkey"
+            columns: ["dancer_id"]
+            isOneToOne: false
+            referencedRelation: "dancers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dancers: {
         Row: {
           account_number: string | null
           bank_copy: string | null
           bank_name: string | null
           bu_code: Database["public"]["Enums"]["bu_code"]
-          company: string | null
           contact: string | null
+          contract_end: string | null
+          contract_start: string | null
           created_at: string
           gender: string | null
           id: number
           id_document_file: string | null
           id_document_type: string | null
-          name: string
           nationality: string | null
           nickname_en: string | null
           nickname_ko: string | null
           note: string | null
+          partner_company_id: number | null
+          partner_worker_id: number | null
           photo: string | null
           real_name: string | null
-          team_name: string | null
           updated_at: string
+          visa_end: string | null
+          visa_start: string | null
+          visa_type: string | null
         }
         Insert: {
           account_number?: string | null
           bank_copy?: string | null
           bank_name?: string | null
           bu_code: Database["public"]["Enums"]["bu_code"]
-          company?: string | null
           contact?: string | null
+          contract_end?: string | null
+          contract_start?: string | null
           created_at?: string
           gender?: string | null
           id?: number
           id_document_file?: string | null
           id_document_type?: string | null
-          name: string
           nationality?: string | null
           nickname_en?: string | null
           nickname_ko?: string | null
           note?: string | null
+          partner_company_id?: number | null
+          partner_worker_id?: number | null
           photo?: string | null
           real_name?: string | null
-          team_name?: string | null
           updated_at?: string
+          visa_end?: string | null
+          visa_start?: string | null
+          visa_type?: string | null
         }
         Update: {
           account_number?: string | null
           bank_copy?: string | null
           bank_name?: string | null
           bu_code?: Database["public"]["Enums"]["bu_code"]
-          company?: string | null
           contact?: string | null
+          contract_end?: string | null
+          contract_start?: string | null
           created_at?: string
           gender?: string | null
           id?: number
           id_document_file?: string | null
           id_document_type?: string | null
-          name?: string
           nationality?: string | null
           nickname_en?: string | null
           nickname_ko?: string | null
           note?: string | null
+          partner_company_id?: number | null
+          partner_worker_id?: number | null
           photo?: string | null
           real_name?: string | null
-          team_name?: string | null
           updated_at?: string
+          visa_end?: string | null
+          visa_start?: string | null
+          visa_type?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "dancers_partner_worker_id_fkey"
+            columns: ["partner_worker_id"]
+            isOneToOne: false
+            referencedRelation: "partner_worker"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "external_dancers_bu_code_fkey"
             columns: ["bu_code"]
             isOneToOne: false
             referencedRelation: "business_units"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "fk_dancers_partner_company_id"
+            columns: ["partner_company_id"]
+            isOneToOne: false
+            referencedRelation: "partner_company"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1265,4 +1381,3 @@ export const Constants = {
     },
   },
 } as const
-

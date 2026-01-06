@@ -13,7 +13,7 @@ type Dancer = Tables<'dancers'>;
 
 interface DanceTeam {
   id: number;
-  name_ko: string;
+  name_ko: string | null;
   name_en: string | null;
   nationality: string | null;
   logo: string | null;

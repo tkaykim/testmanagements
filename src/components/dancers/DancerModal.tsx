@@ -42,7 +42,6 @@ export const DancerModal: React.FC<DancerModalProps> = ({
   dancer,
 }) => {
   const [formData, setFormData] = useState<Partial<Dancer>>({
-    team_name: '',
     contact: '',
     nationality: '',
     gender: null,
@@ -173,25 +172,10 @@ export const DancerModal: React.FC<DancerModalProps> = ({
               }
             }
           } else {
-            // 기존 team_name 필드가 있으면 사용 (하위 호환성)
-            if (dancer.team_name) {
-              const team = danceTeams.find((t) => 
-                t.name_ko === dancer.team_name || t.name_en === dancer.team_name
-              );
-              if (team) {
-                setSelectedTeam(team);
-                setSelectedTeamId(team.id);
-                setTeamSearchQuery(team.name_ko || team.name_en || '');
-              } else {
-                setSelectedTeam(null);
-                setSelectedTeamId(null);
-                setTeamSearchQuery(dancer.team_name);
-              }
-            } else {
-              setSelectedTeam(null);
-              setSelectedTeamId(null);
-              setTeamSearchQuery('');
-            }
+            // team_name 필드는 더 이상 사용하지 않음
+            setSelectedTeam(null);
+            setSelectedTeamId(null);
+            setTeamSearchQuery('');
           }
         } catch (error) {
           console.error('팀 정보 조회 실패:', error);
@@ -236,7 +220,6 @@ export const DancerModal: React.FC<DancerModalProps> = ({
       const initialPartnerCompanyId = (dancer as any)?.partner_company_id || null;
       
       setFormData({
-        team_name: '',
         contact: '',
         nationality: '',
         gender: null,
@@ -346,8 +329,8 @@ export const DancerModal: React.FC<DancerModalProps> = ({
       return;
     }
     
-    // team_name을 제외하고 저장 (DB에 컬럼이 없을 수 있음)
-    const { team_name, ...restData } = formData;
+    // formData를 그대로 사용 (team_name은 더 이상 사용하지 않음)
+    const restData = formData;
     
     // 빈 문자열을 null로 변환 (DB 제약 조건 위반 방지)
     const submitData: any = {};
@@ -418,7 +401,6 @@ export const DancerModal: React.FC<DancerModalProps> = ({
     setSelectedTeamId(team.id);
     const teamName = team.name_ko || team.name_en || '';
     setTeamSearchQuery(teamName);
-    setFormData((prev) => ({ ...prev, team_name: teamName }));
     setShowTeamDropdown(false);
   };
 
@@ -426,7 +408,6 @@ export const DancerModal: React.FC<DancerModalProps> = ({
     setSelectedTeam(null);
     setSelectedTeamId(null);
     setTeamSearchQuery('');
-    setFormData((prev) => ({ ...prev, team_name: '' }));
     setShowTeamDropdown(false);
   };
 

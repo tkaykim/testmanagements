@@ -328,27 +328,27 @@ export default function AffiliatedDancersPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">소속 댄서 관리</h1>
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">소속 댄서 관리</h1>
           <button
             onClick={activeTab === 'dancers' ? handleAddDancer : handleAddTeam}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm md:text-base w-full sm:w-auto"
           >
             {activeTab === 'dancers' ? '댄서 추가' : '댄스팀 추가'}
           </button>
         </div>
 
-        <p className="text-sm text-gray-600">
+        <p className="text-xs md:text-sm text-gray-600">
           &apos;그리고 엔터테인먼트&apos; 소속 댄서 및 댄스팀을 관리합니다.
         </p>
 
         {/* 탭 메뉴 */}
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
+          <nav className="-mb-px flex space-x-4 md:space-x-8">
             <button
               onClick={() => setActiveTab('dancers')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'dancers'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -358,7 +358,7 @@ export default function AffiliatedDancersPage() {
             </button>
             <button
               onClick={() => setActiveTab('teams')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'teams'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -372,14 +372,14 @@ export default function AffiliatedDancersPage() {
         {/* 댄서 탭 */}
         {activeTab === 'dancers' && (
           <>
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-200">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="닉네임, 실명, 연락처, 국적, 성별 등으로 검색..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 pl-10 pr-10 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg

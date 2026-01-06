@@ -107,12 +107,12 @@ export default function DanceTeamsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">댄스팀 관리</h1>
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">댄스팀 관리</h1>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm md:text-base w-full sm:w-auto"
           >
             댄스팀 추가
           </button>

@@ -164,22 +164,22 @@ export default function PartnersPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">파트너 관리</h1>
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">파트너 관리</h1>
           <button
             onClick={() => (activeTab === 'companies' ? handleAddCompany() : handleAddWorker())}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm md:text-base w-full sm:w-auto"
           >
             {activeTab === 'companies' ? '파트너 회사 추가' : '파트너 워커 추가'}
           </button>
         </div>
 
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
+          <nav className="-mb-px flex space-x-4 md:space-x-8">
             <button
               onClick={() => setActiveTab('companies')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'companies'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -189,7 +189,7 @@ export default function PartnersPage() {
             </button>
             <button
               onClick={() => setActiveTab('workers')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === 'workers'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
